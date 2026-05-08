@@ -1,1 +1,648 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الذكاء الاصطناعي</title>
+  <style>
+    :root {
+      --primary-color: #E53935;
+      --primary-light: #EF5350;
+      --primary-dark: #C62828;
+      --secondary-color: #1A1A1A;
+      --background-color: #0A0A0A;
+      --chat-user: #E53935;
+      --chat-bot: #2A2A2A;
+      --text-light: #FFFFFF;
+      --text-dark: #E0E0E0;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --gradient: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      --card-gradient: linear-gradient(135deg, #2C2C2C, #1A1A1A);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: var(--background-color);
+      color: var(--text-dark);
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 500px;
+      height: 100vh;
+      max-height: 90vh;
+      background-color: var(--background-color);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+      border: 1px solid #333;
+      position: relative;
+    }
+    
+    /* حاوية الفيديو كخلفية */
+    .video-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      overflow: hidden;
+    }
+    
+    .background-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.7;
+    }
+    
+    .header {
+      background: rgba(26, 26, 26, 0.9);
+      padding: 12px 16px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #333;
+      position: relative;
+      min-height: 60px;
+      z-index: 2;
+      backdrop-filter: blur(5px);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .ai-animation {
+      width: 36px;
+      height: 36px;
+      position: relative;
+    }
+    
+    .ai-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(229, 57, 53, 0.2);
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    
+    .ai-core {
+      width: 20px;
+      height: 20px;
+      background: var(--primary-color);
+      border-radius: 4px;
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      animation: rotate 4s infinite linear;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 10px;
+    }
+    
+    .contact-btn {
+      background-color: rgba(229, 57, 53, 0.2);
+      border: 1px solid rgba(229, 57, 53, 0.4);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 12px; /* زوايا أقل استدارة */
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .contact-btn:hover {
+      background-color: rgba(229, 57, 53, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .contact-btn:active {
+      transform: translateY(0);
+    }
+    
+    .chat-container {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .message {
+      max-width: 85%;
+      padding: 12px 16px; /* تقليل الحشوة لجعلها أكثر نحافة */
+      border-radius: 14px; /* زوايا أقل استدارة */
+      position: relative;
+      animation: fadeIn 0.4s ease;
+      line-height: 1.5;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(5px);
+    }
+    
+    .user-message {
+      align-self: flex-end;
+      background: rgba(229, 57, 53, 0.85);
+      color: var(--text-light);
+      border-bottom-right-radius: 6px;
+    }
+    
+    .bot-message {
+      align-self: flex-start;
+      background: rgba(42, 42, 42, 0.85);
+      color: var(--text-light);
+      border-bottom-left-radius: 6px;
+    }
+    
+    .message-text {
+      flex: 1;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      font-size: 15px;
+    }
+    
+    .message-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .action-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 8px; /* زوايا أقل استدارة */
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    .typing-indicator {
+      align-self: flex-start;
+      background: rgba(42, 42, 42, 0.85);
+      color: #aaa;
+      padding: 12px 16px; /* تقليل الحشوة لجعلها أكثر نحافة */
+      border-radius: 14px; /* زوايا أقل استدارة */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom-left-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(5px);
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      animation: typingAnimation 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    
+    .input-area {
+      display: flex;
+      padding: 16px;
+      background: rgba(26, 26, 26, 0.9);
+      border-top: 1px solid #333;
+      gap: 12px;
+      align-items: center;
+      z-index: 2;
+      backdrop-filter: blur(5px);
+    }
+    
+    .message-input {
+      flex: 1;
+      padding: 12px 16px; /* تقليل الحشوة لجعلها أكثر نحافة */
+      border: 1px solid #444;
+      border-radius: 20px; /* زوايا أقل استدارة */
+      outline: none;
+      font-size: 15px;
+      transition: all 0.3s;
+      background: rgba(26, 26, 26, 0.9);
+      color: white;
+      backdrop-filter: blur(5px);
+    }
+    
+    .message-input:focus {
+      border-color: var(--primary-light);
+      background: rgba(30, 30, 30, 0.9);
+      box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2);
+    }
+    
+    .message-input::placeholder {
+      color: #888;
+    }
+    
+    .send-btn {
+      background: var(--gradient);
+      color: white;
+      border: none;
+      width: 44px; /* تصغير الحجم لجعله أكثر نحافة */
+      height: 44px;
+      border-radius: 12px; /* زوايا أقل استدارة */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 3px 8px rgba(229, 57, 53, 0.3);
+    }
+    
+    .send-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+    }
+    
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .footer {
+      padding: 16px 12px; /* زيادة الحشوة العلوية والسفلية */
+      text-align: center;
+      color: #777;
+      font-size: 12px;
+      background: rgba(26, 26, 26, 0.9);
+      border-top: 1px solid #333;
+      z-index: 2;
+      backdrop-filter: blur(5px);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .dev-text {
+      font-weight: 700; /* جعل الخط أكثر سماكة */
+      font-size: 16px; /* تكبير حجم الخط */
+      position: relative;
+      top: -4px; /* رفع النص قليلاً للأعلى */
+      padding: 6px 12px;
+      border-radius: 10px;
+      display: inline-block;
+      background: rgba(30, 30, 30, 0.8);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      animation: colorChange 2s infinite alternate, float 3s infinite ease-in-out;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      letter-spacing: 0.5px;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes typingAnimation {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* تأثير تغيير الألوان */
+    @keyframes colorChange {
+      0% {
+        color: #E53935; /* أحمر */
+        border: 1px solid #E53935;
+        box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
+      }
+      25% {
+        color: #4CAF50; /* أخضر */
+        border: 1px solid #4CAF50;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+      }
+      50% {
+        color: #2196F3; /* أزرق */
+        border: 1px solid #2196F3;
+        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+      }
+      75% {
+        color: #FF9800; /* برتقالي */
+        border: 1px solid #FF9800;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+      }
+      100% {
+        color: #9C27B0; /* بنفسجي */
+        border: 1px solid #9C27B0;
+        box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+      }
+    }
+    
+    /* تأثير الطفو */
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+    
+    /* تخصيص شريط التمرير */
+    .messages::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .messages::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    
+    .messages::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 10px;
+    }
+    
+    .messages::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="appContainer">
+    <!-- الفيديو كخلفية -->
+    <div class="video-background">
+      <video class="background-video" id="backgroundVideo" autoplay muted loop playsinline preload="auto">
+        <source src="{{ url_for('static', filename='videos/images.mp4') }}" type="video/mp4">
+        <source src="{{ url_for('static', filename='videos/images.mp4') }}" type="video/mp4">
+        متصفحك لا يدعم تشغيل الفيديو.
+      </video>
+    </div>
+    
+    <div class="header">
+      <div class="logo">
+        <div class="ai-animation">
+          <div class="ai-circle"></div>
+          <div class="ai-core">AI</div>
+        </div>
+      </div>
+      <button class="contact-btn" onclick="contactDeveloper()">
+        <span>التواصل مع المطور</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="chat-container">
+      <div class="messages" id="messages">
+        <!-- تمت إزالة الرسالة الترحيبية التلقائية -->
+      </div>
+      
+      <div class="input-area">
+        <input type="text" class="message-input" id="input" placeholder="اكتب رسالتك هنا..." onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <span class="dev-text">تم التطوير بواسطة دارك</span>
+    </div>
+  </div>
 
+  <script>
+    // استخراج معلمات URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatId = urlParams.get('chatId');
+    let lastUserMessage = null;
+    
+    // بدء تشغيل الفيديو تلقائياً
+    
+    window.onload = function() {
+    const video = document.getElementById('backgroundVideo');
+
+    // تشغيل الفيديو
+    video.play();
+
+    // تشغيل الصوت بعد أول لمسة
+    document.body.addEventListener('click', () => {
+      video.muted = false;
+      video.volume = 1;
+      video.play();
+    }, { once: true });
+  };
+    
+    
+
+    async function sendMessage() {
+      const input = document.getElementById("input");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      // حفظ آخر رسالة من المستخدم
+      lastUserMessage = msg;
+      
+      addMessage(msg, "user");
+      input.value = "";
+
+      // مؤشر الكتابة
+      const typingIndicator = addTypingIndicator();
+
+      try {
+        // إرسال الطلب إلى API الذكاء الاصطناعي
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: msg,
+            chatId: chatId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('فشل في الحصول على رد من الخادم');
+        }
+
+        const data = await response.json();
+        removeTypingIndicator(typingIndicator);
+        
+        if (data.reply) {
+          addMessage(data.reply, "bot");
+        } else {
+          addMessage("عذرًا، لم أتمكن من معالجة طلبك. يرجى المحاولة مرة أخرى.", "bot");
+        }
+      } catch (error) {
+        removeTypingIndicator(typingIndicator);
+        addMessage("عذرًا، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.", "bot");
+        console.error("Error:", error);
+      }
+    }
+
+    function addMessage(text, sender) {
+      const messagesContainer = document.getElementById("messages");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${sender}-message`;
+      
+      // إنشاء نص الرسالة
+      const textDiv = document.createElement("div");
+      textDiv.className = "message-text";
+      textDiv.innerText = text;
+      
+      // إضافة العناصر إلى الرسالة
+      messageDiv.appendChild(textDiv);
+      
+      // إضافة أزرار الإجراءات لرسائل البوت فقط
+      if (sender === "bot") {
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "message-actions";
+        
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "action-btn";
+        copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> نسخ';
+        copyBtn.onclick = function() {
+          copyToClipboard(text);
+        };
+        
+        const retryBtn = document.createElement("button");
+        retryBtn.className = "action-btn";
+        retryBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg> إعادة';
+        retryBtn.onclick = function() {
+          // إعادة استخدام آخر سؤال من المستخدم
+          if (lastUserMessage) {
+            document.getElementById("input").value = lastUserMessage;
+            // إزالة الرسائل السابقة
+            const messagesContainer = document.getElementById("messages");
+            messagesContainer.innerHTML = '';
+            // إعادة إرسال الرسالة
+            sendMessage();
+          }
+        };
+        
+        actionsDiv.appendChild(copyBtn);
+        actionsDiv.appendChild(retryBtn);
+        messageDiv.appendChild(actionsDiv);
+      }
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      return messageDiv;
+    }
+
+    function addTypingIndicator() {
+      const messagesContainer = document.getElementById("messages");
+      const typingDiv = document.createElement("div");
+      typingDiv.className = "typing-indicator";
+      typingDiv.innerHTML = `
+        <span>جاري التفكير</span>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      `;
+      messagesContainer.appendChild(typingDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      return typingDiv;
+    }
+
+    function removeTypingIndicator(typingIndicator) {
+      if (typingIndicator && typingIndicator.parentNode) {
+        typingIndicator.parentNode.removeChild(typingIndicator);
+      }
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === "Enter") {
+        sendMessage();
+      }
+    }
+
+    function contactDeveloper() {
+      // في تطبيق تلجرام المصغر، يمكن استخدام TgApp.openTelegramLink
+      if (typeof TgApp !== 'undefined' && TgApp.openTelegramLink) {
+        TgApp.openTelegramLink('https://t.me/FA_VZ');
+      } else {
+        // Fallback في حالة فتحه في متصفح عادي
+        window.open('https://t.me/FA_VZ', '_blank');
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(function() {
+        // إظهار رسالة نجاح النسخ
+        const copyBtns = document.querySelectorAll('.action-btn');
+        copyBtns.forEach(btn => {
+          if (btn.innerHTML.includes('نسخ')) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> تم النسخ!';
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+            }, 2000);
+          }
+        });
+      }, function(err) {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+  </script>
+</body>
+</html>
